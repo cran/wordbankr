@@ -1,0 +1,16 @@
+19b84eb2bb98a5a63a3f17a056ba920f *DESCRIPTION
+7095893cc7d6e6d350f892737731ce10 *NAMESPACE
+8df1ae2a0353a8abb0add07c9326e228 *R/wordbankr.R
+be27b767223b20ca826ce924d3d8691c *README.md
+029c826d27947c1b0db22e848b026214 *build/vignette.rds
+0f3aee3e2be8cad39bbc02815dc1e08b *inst/doc/wordbankr.R
+18efe4a0fac1c7facbde48b2881ca8c8 *inst/doc/wordbankr.Rmd
+3252a24940ecd96a2ee405a3015fd544 *inst/doc/wordbankr.html
+5e69d056f99cc6a195b4f05d80067bb7 *man/connect_to_wordbank.Rd
+a787338946157d99f274bcab2fb784b2 *man/get_administration_data.Rd
+12446faf2002bdf2c5a6c791c3eba530 *man/get_common_table.Rd
+ccb7ef82c3ce5ee34b47a02bdfc95df0 *man/get_instrument_data.Rd
+ba6d42689a581a79e0d9a5cf3f15a4aa *man/get_instrument_table.Rd
+3f4aa62085cdd286c9ed4cc511d07c7b *man/get_instruments.Rd
+aa8107df50831e19af4f1f5b37991e6c *man/get_item_data.Rd
+18efe4a0fac1c7facbde48b2881ca8c8 *vignettes/wordbankr.Rmd
