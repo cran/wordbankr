@@ -7,20 +7,19 @@
 connect_to_wordbank(mode = "remote")
 }
 \arguments{
-\item{mode}{A string indicating connection mode: one of \code{"local"},
-or \code{"remote"} (defaults to \code{"remote"})}
+\item{mode}{A string indicating connection mode: one of \code{"local"}, or
+\code{"remote"} (defaults to \code{"remote"}).}
 }
 \value{
-A \code{src} object which is connection to the Wordbank database
+A \code{src} object which is connection to the Wordbank database.
 }
 \description{
 Connect to the Wordbank database
 }
 \examples{
 \dontrun{
-wordbank <- connect_to_wordbank()
-rm(wordbank)
+src <- connect_to_wordbank()
+DBI::dbDisconnect(src)
 }
 }
 \keyword{internal}
-

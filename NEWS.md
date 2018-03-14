@@ -1,3 +1,6 @@
-* additional fields in `get_administration_data()`: `zygosity`, `original_id`, `norming`, `longitudinal`, `source_name`
-* minor bug fixes
-* faster queries
+* compatibility with tidyeval
+* new functionality for metadata on data sources
+* new functionality for age of acquisition estimates
+* new functionality for cross-linguistic mapping
+* function and argument naming consistency
+* bug fixes and performance improvements
