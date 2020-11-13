@@ -1,65 +1,326 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="Mika Braginsky" />
 
-<meta name="date" content="2018-03-14" />
+<meta name="date" content="2020-11-13" />
 
 <title>Accessing the Wordbank database</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
 
 </head>
 
@@ -69,8 +330,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Accessing the Wordbank database</h1>
-<h4 class="author"><em>Mika Braginsky</em></h4>
-<h4 class="date"><em>2018-03-14</em></h4>
+<h4 class="author">Mika Braginsky</h4>
+<h4 class="date">2020-11-13</h4>
 
 
 <div id="TOC">
@@ -78,254 +339,312 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#administrations">Administrations</a></li>
 <li><a href="#items">Items</a></li>
 <li><a href="#administrations-x-items">Administrations x Items</a></li>
-<li><a href="#metadata">Metadata</a><ul>
+<li><a href="#metadata">Metadata</a>
+<ul>
 <li><a href="#instruments">Instruments</a></li>
 <li><a href="#sources">Sources</a></li>
 </ul></li>
 <li><a href="#advanced-functionality-age-of-acquisition">Advanced functionality: Age of acquisition</a></li>
 <li><a href="#advanced-functionality-cross-linguistic-data">Advanced functionality: Cross-linguistic data</a></li>
+<li><a href="#advanced-functionality-vocabulary-quantiles">Advanced functionality: Vocabulary quantiles</a></li>
 </ul>
 </div>
 
 <p>The <code>wordbankr</code> package allows you to access data in the <a href="http://wordbank.stanford.edu/">Wordbank database</a> from <code>R</code>. This vignette shows some examples of how to use the data loading functions and what the resulting data look like.</p>
-<p>There are three different data views that you can pull out of Wordbank: by-administration, by-item, and administration-by-item. Additionally, you can get metadata about the sources and instruments underlying the data. Advanced functionality let’s you get estimates of words’ age of acquistion and word mappings across languages.</p>
+<p>There are three different data views that you can pull out of Wordbank: by-administration, by-item, and administration-by-item. Additionally, you can get metadata about the sources and instruments underlying the data. Advanced functionality let’s you get estimates of words’ age of acquisition and word mappings across languages.</p>
 <div id="administrations" class="section level2">
 <h2>Administrations</h2>
 <p>The <code>get_administration_data()</code> function gives by-administration information, either for a specific language and/or form or for all instruments.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_administration_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">get_administration_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 5,520 x 15
-##    data_id   age comprehension production           language  form
-##      &lt;dbl&gt; &lt;int&gt;         &lt;int&gt;      &lt;int&gt;              &lt;chr&gt; &lt;chr&gt;
-##  1  129242    27           497        497 English (American)    WS
-##  2  129243    21           369        369 English (American)    WS
-##  3  129244    26           190        190 English (American)    WS
-##  4  129245    27           264        264 English (American)    WS
-##  5  129246    19           159        159 English (American)    WS
-##  6  129247    30           513        513 English (American)    WS
-##  7  129248    25           444        444 English (American)    WS
-##  8  129249    24           582        582 English (American)    WS
-##  9  129250    28           558        558 English (American)    WS
-## 10  129251    18             7          7 English (American)    WS
-## # ... with 5,510 more rows, and 9 more variables: birth_order &lt;fctr&gt;,
-## #   ethnicity &lt;fctr&gt;, sex &lt;fctr&gt;, zygosity &lt;chr&gt;, norming &lt;lgl&gt;,
-## #   mom_ed &lt;fctr&gt;, longitudinal &lt;lgl&gt;, source_name &lt;chr&gt;, license &lt;chr&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_administration_data</span>()</code></pre></div>
-<pre><code>## # A tibble: 73,230 x 15
-##    data_id   age comprehension production language  form birth_order
-##      &lt;dbl&gt; &lt;int&gt;         &lt;int&gt;      &lt;int&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;fctr&gt;
-##  1   29821    13           293         88 Croatian    WG        &lt;NA&gt;
-##  2   29822    16           122         12 Croatian    WG        &lt;NA&gt;
-##  3   29823     9             3          0 Croatian    WG        &lt;NA&gt;
-##  4   29824    12             0          0 Croatian    WG        &lt;NA&gt;
-##  5   29825    12            44          0 Croatian    WG        &lt;NA&gt;
-##  6   29826     8            14          5 Croatian    WG        &lt;NA&gt;
-##  7   29827     9             2          1 Croatian    WG        &lt;NA&gt;
-##  8   29828    10            44          1 Croatian    WG        &lt;NA&gt;
-##  9   29829    13           172         51 Croatian    WG        &lt;NA&gt;
-## 10   29830    16           241         68 Croatian    WG        &lt;NA&gt;
-## # ... with 73,220 more rows, and 8 more variables: ethnicity &lt;fctr&gt;,
-## #   sex &lt;fctr&gt;, zygosity &lt;chr&gt;, norming &lt;lgl&gt;, mom_ed &lt;fctr&gt;,
-## #   longitudinal &lt;lgl&gt;, source_name &lt;chr&gt;, license &lt;chr&gt;</code></pre>
+##    data_id   age comprehension production language form  birth_order ethnicity
+##      &lt;dbl&gt; &lt;int&gt;         &lt;int&gt;      &lt;int&gt; &lt;chr&gt;    &lt;chr&gt; &lt;fct&gt;       &lt;fct&gt;    
+##  1  129242    27           497        497 English… WS    Fourth      Hispanic 
+##  2  129243    21           369        369 English… WS    Second      White    
+##  3  129244    26           190        190 English… WS    Fourth      White    
+##  4  129245    27           264        264 English… WS    Second      White    
+##  5  129246    19           159        159 English… WS    Second      Other    
+##  6  129247    30           513        513 English… WS    Second      Other    
+##  7  129248    25           444        444 English… WS    Second      Other    
+##  8  129249    24           582        582 English… WS    Second      White    
+##  9  129250    28           558        558 English… WS    Second      Black    
+## 10  129251    18             7          7 English… WS    Fourth      Other    
+## # … with 5,510 more rows, and 7 more variables: sex &lt;fct&gt;, zygosity &lt;chr&gt;,
+## #   norming &lt;lgl&gt;, mom_ed &lt;fct&gt;, longitudinal &lt;lgl&gt;, source_name &lt;chr&gt;,
+## #   license &lt;chr&gt;</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">get_administration_data</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 82,055 x 15
+##    data_id   age comprehension production language form  birth_order ethnicity
+##      &lt;dbl&gt; &lt;int&gt;         &lt;int&gt;      &lt;int&gt; &lt;chr&gt;    &lt;chr&gt; &lt;fct&gt;       &lt;fct&gt;    
+##  1   29821    13           293         88 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  2   29822    16           122         12 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  3   29823     9             3          0 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  4   29824    12             0          0 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  5   29825    12            44          0 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  6   29826     8            14          5 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  7   29827     9             2          1 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  8   29828    10            44          1 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+##  9   29829    13           172         51 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+## 10   29830    16           241         68 Croatian WG    &lt;NA&gt;        &lt;NA&gt;     
+## # … with 82,045 more rows, and 7 more variables: sex &lt;fct&gt;, zygosity &lt;chr&gt;,
+## #   norming &lt;lgl&gt;, mom_ed &lt;fct&gt;, longitudinal &lt;lgl&gt;, source_name &lt;chr&gt;,
+## #   license &lt;chr&gt;</code></pre>
 </div>
 <div id="items" class="section level2">
 <h2>Items</h2>
 <p>The <code>get_item_data()</code> function gives by-item information, either for a specific language and/or form or for all instruments.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_item_data</span>(<span class="dt">language =</span> <span class="st">&quot;Italian&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WG&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">get_item_data</span>(<span class="dt">language =</span> <span class="st">&quot;Italian&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WG&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 505 x 11
-##    item_id                          definition language  form        type
-##      &lt;chr&gt;                               &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;
-##  1  item_1 Risponde quando è chiamato per nome  Italian    WG first_signs
-##  2  item_2                   Risponde ad un No  Italian    WG first_signs
-##  3  item_3 Reagisce ad un C'è la mamma/il papà  Italian    WG first_signs
-##  4  item_4                       Vuoi la pappa  Italian    WG     phrases
-##  5  item_5               Hai sonno? Sei stanco  Italian    WG     phrases
-##  6  item_6                          Vuoi bere?  Italian    WG     phrases
-##  7  item_7                        Stai attento  Italian    WG     phrases
-##  8  item_8                          Stai buono  Italian    WG     phrases
-##  9  item_9                     Batti le manine  Italian    WG     phrases
-## 10 item_10               Cambiamo il pannolino  Italian    WG     phrases
-## # ... with 495 more rows, and 6 more variables: category &lt;chr&gt;,
-## #   lexical_category &lt;chr&gt;, lexical_class &lt;chr&gt;, uni_lemma &lt;chr&gt;,
-## #   complexity_category &lt;chr&gt;, num_item_id &lt;dbl&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_item_data</span>()</code></pre></div>
-<pre><code>## # A tibble: 28,898 x 11
-##     item_id definition language  form  type     category lexical_category
-##       &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;chr&gt;            &lt;chr&gt;
-##  1  item_81     gristi Croatian    WG  word action_words       predicates
-##  2 item_264     puhati Croatian    WG  word action_words       predicates
-##  3 item_269    razbiti Croatian    WG  word action_words       predicates
-##  4  item_64   donijeti Croatian    WG  word action_words       predicates
-##  5 item_153     kupiti Croatian    WG  word action_words       predicates
-##  6  item_36    čistiti Croatian    WG  word action_words       predicates
-##  7 item_384  zatvoriti Croatian    WG  word action_words       predicates
-##  8 item_243    plakati Croatian    WG  word action_words       predicates
-##  9 item_246    plesati Croatian    WG  word action_words       predicates
-## 10  item_42     crtati Croatian    WG  word action_words       predicates
-## # ... with 28,888 more rows, and 4 more variables: lexical_class &lt;chr&gt;,
+##    item_id definition language form  type  category lexical_category
+##    &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;           
+##  1 item_1  Risponde … Italian  WG    firs… &lt;NA&gt;     &lt;NA&gt;            
+##  2 item_2  Risponde … Italian  WG    firs… &lt;NA&gt;     &lt;NA&gt;            
+##  3 item_3  Reagisce … Italian  WG    firs… &lt;NA&gt;     &lt;NA&gt;            
+##  4 item_4  Vuoi la p… Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+##  5 item_5  Hai sonno… Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+##  6 item_6  Vuoi bere? Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+##  7 item_7  Stai atte… Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+##  8 item_8  Stai buono Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+##  9 item_9  Batti le … Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+## 10 item_10 Cambiamo … Italian  WG    phra… &lt;NA&gt;     &lt;NA&gt;            
+## # … with 495 more rows, and 4 more variables: lexical_class &lt;chr&gt;,
+## #   uni_lemma &lt;chr&gt;, complexity_category &lt;chr&gt;, num_item_id &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">get_item_data</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 31,811 x 11
+##    item_id definition language form  type  category lexical_category
+##    &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;           
+##  1 item_81 gristi     Croatian WG    word  action_… predicates      
+##  2 item_2… puhati     Croatian WG    word  action_… predicates      
+##  3 item_2… razbiti    Croatian WG    word  action_… predicates      
+##  4 item_64 donijeti   Croatian WG    word  action_… predicates      
+##  5 item_1… kupiti     Croatian WG    word  action_… predicates      
+##  6 item_36 čistiti    Croatian WG    word  action_… predicates      
+##  7 item_3… zatvoriti  Croatian WG    word  action_… predicates      
+##  8 item_2… plakati    Croatian WG    word  action_… predicates      
+##  9 item_2… plesati    Croatian WG    word  action_… predicates      
+## 10 item_42 crtati     Croatian WG    word  action_… predicates      
+## # … with 31,801 more rows, and 4 more variables: lexical_class &lt;chr&gt;,
 ## #   uni_lemma &lt;chr&gt;, complexity_category &lt;chr&gt;, num_item_id &lt;dbl&gt;</code></pre>
 </div>
 <div id="administrations-x-items" class="section level2">
 <h2>Administrations x Items</h2>
 <p>If you are only looking at total vocabulary size, <code>admins</code> is all you need, since it has both productive and receptive vocabulary sizes calculated. If you are looking at specific items or subsets of items, you need to load instrument data, using the <code>get_instrument_data()</code> function. Pass it an instrument language and form, along with a list of items you want to extract (by <code>item_id</code>).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_instrument_data</span>(
-  <span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,
-  <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,
-  <span class="dt">items =</span> <span class="kw">c</span>(<span class="st">&quot;item_26&quot;</span>, <span class="st">&quot;item_46&quot;</span>)
-)</code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">get_instrument_data</span>(</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>  <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  <span class="dt">items =</span> <span class="kw">c</span>(<span class="st">&quot;item_26&quot;</span>, <span class="st">&quot;item_46&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5"></a>)</span></code></pre></div>
 <pre><code>## # A tibble: 11,692 x 3
-##    data_id    value num_item_id
-##      &lt;dbl&gt;    &lt;chr&gt;       &lt;dbl&gt;
-##  1  129242 produces          26
-##  2  129243 produces          26
-##  3  129244 produces          26
-##  4  129245 produces          26
-##  5  129246                   26
-##  6  129247 produces          26
-##  7  129248 produces          26
-##  8  129249 produces          26
-##  9  129250 produces          26
-## 10  129251                   26
-## # ... with 11,682 more rows</code></pre>
+##    data_id value      num_item_id
+##      &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt;
+##  1  129242 &quot;produces&quot;          26
+##  2  129243 &quot;produces&quot;          26
+##  3  129244 &quot;produces&quot;          26
+##  4  129245 &quot;produces&quot;          26
+##  5  129246 &quot;&quot;                  26
+##  6  129247 &quot;produces&quot;          26
+##  7  129248 &quot;produces&quot;          26
+##  8  129249 &quot;produces&quot;          26
+##  9  129250 &quot;produces&quot;          26
+## 10  129251 &quot;&quot;                  26
+## # … with 11,682 more rows</code></pre>
 <p>By default <code>get_instrument_table()</code> returns a data frame with columns of the administration’s <code>data_id</code>, the item’s <code>num_item_id</code> (numerical <code>item_id</code>), and the corresponding value. To include administration information, you can set the <code>administrations</code> argument to <code>TRUE</code>, or pass the result of <code>get_administration_data()</code> as <code>administrations</code> (that way you can prevent the administration data from being loaded multiple times). Similarly, you can set the <code>iteminfo</code> argument to <code>TRUE</code>, or pass it result of <code>get_item_data()</code>.</p>
 <p>Loading the data is fast if you need only a handful of items, but the time scales about linearly with the number of items, and can get quite slow if you need many or all of them. So, it’s a good idea to filter down to only the items you need before calling <code>get_instrument_data()</code>.</p>
 <p>As an example, let’s say we want to look at the production of animal words on English Words &amp; Sentences over age. First we get the items we want:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">animals &lt;-<span class="st"> </span><span class="kw">get_item_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(category <span class="op">==</span><span class="st"> &quot;animals&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>animals &lt;-<span class="st"> </span><span class="kw">get_item_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>, <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="st">  </span><span class="kw">filter</span>(category <span class="op">==</span><span class="st"> &quot;animals&quot;</span>)</span></code></pre></div>
 <p>Then we get the instrument data for those items:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">animal_data &lt;-<span class="st"> </span><span class="kw">get_instrument_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,
-                                   <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,
-                                   <span class="dt">items =</span> animals<span class="op">$</span>item_id,
-                                   <span class="dt">administrations =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>animal_data &lt;-<span class="st"> </span><span class="kw">get_instrument_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,</span>
+<span id="cb12-2"><a href="#cb12-2"></a>                                   <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,</span>
+<span id="cb12-3"><a href="#cb12-3"></a>                                   <span class="dt">items =</span> animals<span class="op">$</span>item_id,</span>
+<span id="cb12-4"><a href="#cb12-4"></a>                                   <span class="dt">administrations =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <p>Finally, we calculate how many animals words each child produces and the median number of animals of each age bin:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">animal_summary &lt;-<span class="st"> </span>animal_data <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">produces =</span> value <span class="op">==</span><span class="st"> &quot;produces&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(age, data_id) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">num_animals =</span> <span class="kw">sum</span>(produces, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">median_num_animals =</span> <span class="kw">median</span>(num_animals, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
-  
-<span class="kw">ggplot</span>(animal_summary, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> median_num_animals)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age (months)&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Median animal words producing&quot;</span>)</code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>animal_summary &lt;-<span class="st"> </span>animal_data <span class="op">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">produces =</span> value <span class="op">==</span><span class="st"> &quot;produces&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="st">  </span><span class="kw">group_by</span>(age, data_id) <span class="op">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">num_animals =</span> <span class="kw">sum</span>(produces, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">median_num_animals =</span> <span class="kw">median</span>(num_animals, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</span>
+<span id="cb13-7"><a href="#cb13-7"></a>  </span>
+<span id="cb13-8"><a href="#cb13-8"></a><span class="kw">ggplot</span>(animal_summary, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> median_num_animals)) <span class="op">+</span></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age (months)&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Median animal words producing&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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UqpUKdE+QA899JBs2bLFtcb69evljTfekMsvv1yOHj0q7733nlx11VWu13mAAAIIIBBZAp06dcoTAKnArbfeGlCIq6++OkctlO68ZMmScvPNNwc0H+zMuQK2AiDN/syZM00Tl7bhaqdnre255JJLzEl9xx13yOjRo01w1KNHD+eWlpwhgAACCPhVQP8vaDOYJu0LpP1w+vTpI4MGDfLrfnNvvEGDBvLuu++axVY+tP/qY489lntVnkeogK0+QGpTt25dWbt2raxcuVI2bNhgImmt+bnooosMnbarTp48Wc4555wIpaTYCCCAAAIq0L9/f9EaGO34rEOktG7dOigwegXYrl275LvvvpOKFSua1oqgZISdOlLAdgCkudde/XqVl3aAtpJ2fNZxgDRAIiGAAAIIIKACtWvXNrdga+hl+HojIZBbwHYANG/ePOnXr58kJyfn3oYZZ2HOnDl5lrMAAQQQQAABBBBwooDtAEjbb3v27Cn33Xefadd1L4zWAJEQQAABBBBAAIFQEbAVAB07dsxc3q4jPeuImiQEEEAAAQQQQCCUBWxdBaa9+GvVqiXr1q0L5bKSdwQQQAABBBBAwAjYqgHSNcePHy/Dhw83U2BoMKTDi1tJa4WaNGliPeUeAQQQQAABBBBwtMBfUUwB2dQ+QDrY4YABA/KsqZca0gk6DwsLEEAAAQQQQMChArYDoP3794sOZ+4p6eXxJAQQQAABBBBAIFQEvAZAOmuuXuGlzVurVq3yOLy5FrRKlSrStGnTUCkz+UQAAQQQQACBCBfwGgDdc8890qxZM5k9e7Zcd911pgnMkxdNYJ5UWIYAAggggAACThXwGgDplBfFihUzefc2y7unGXdzF1jfr5On6vws2onaPekEq7///rtcfPHFZrhy99d4jAACCCCAAAII+FrA62Xw0dHRrqu9YmJiRG+6zHqckZFhHrtfEeYpgx999JGMHDnSXEH2+OOPy8cff+xabcqUKWYOMQ22tMZJ520hIYAAAggUXuDXX381PyTr1Klj5mXU71USAgh4FvAaALm/Ze/evXL33XfLv//9b7P4+PHjpiZHAxgNhPJL2nF6yZIlMm7cODOVxrBhw+S9994zq//222+yfPlyeeWVV2TUqFFmZvm33347v02xHAEEEEAgH4EjR46YGnadgDQtLU3OnDljJiHdvHlzPu9gMQKR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CK0ffPCBGSHbvdA6IKQGLD179pR77rnHTLtw7733yh9//OFa7fvvvxddppMhDhs2TP7880/Xa7kfJCcnm4kSb731VtdL06ZNM6PI/s///I/06NFD7rvvPtmxY4dok9T9999vRo59//33XevrAx3JW2dA133ecccdpjbJWkGniHjmmWfMfESaZy2fThhqTXSrj3Xb8+fPl2effdZ6m+iggjr1ROfOnWXEiBE55tbasGGDmYz0qquuMmVds2aN6336QMvz6KOPmnm6crzAEwQQCIoAAVBQ2NkpAqEhoP/U9XbbbbeZQEKnWfjf//3fHJkfNGiQPPXUU6bJSifdbN++vbz66quiTWeatNmoTZs2kpqaagIVrVlp1qxZvkGQrq8jxbrPB6RNYRqo6NxrWjOkTUnXXnutCbp0lOOGDRvKzTffbKZ/0H3qvi+++GLROd00YNIRaHV9ndtN09atW+WFF14wgZHOTK3NbRqcaFCkSbd3zjnnyHnnnSeNGzc2y/TPXXfdZaaW6NKli2kO7Natm3lNgy0td8mSJU3wo6Mu67QTv/zyi+u9mm9db+3ata5lPEAAgSAKZJEQQACBfASy+8FkZU/26nr1wQcfzEpISMjKrikxy7777rus7K+vrOzJDV3rPPnkk2bZxo0bzbLsQCYre/Zn1+v6QJdl19zkWGY9yZ4XKKtDhw7WU3OfPct5VoMGDbKypyAxz7Nrosw+sif8dK2XPali1hNPPGGeZ9f8ZJUpUyYru3bK9bouyw6WsrInZsx68803c+RRV+rfv3/W5Zdf7lr/kksuyXr66afN87S0NLN+9nxartfnzp1rlmXXCmUtXbo0K3sI/6zsAMe8nh1wZWneNm/e7FpfH2QHU1nZtVg5lvEEAQSCI0ANUBCDT3aNgJMFtGlL+/9kBx6mKUibgypWrCi///67mb1Z875u3TopV66cZAcOrqJYtSK6QLfxww8/mHudjNO6aYdqfa+ntGnTJtFamdypefPmrklntT+NJq2JsZJ2lt63b595un79elNTpDVSVtIaIL2qa8uWLWaRdmq+8MILrZelZs2appbKtcDDA60pslKLFi3MQ23Oa926tenjU69ePVPL9frrr5tOz9p3yj1pubR8JAQQCL4AU1gH/xiQAwQcKfDhhx+KTlCo/Xf0ZqXy5cubpiQNdJKSkqRKlSquwETX0detpAGHNj/ppLE607OVOnbsKBUqVLCe5rjXfbpvw3rx3HPPtR667rX5y1PSvjq5gw/Npyarn0/uCRk1f9m/Qz1tzrXMfX/W5KL6Hi2f9vnRGa/1SjltFhw+fLiZld39qjFtItPykRBAIPgCBEDBPwbkAAFHClidn7Xmxz3NmDHDdDzWmqAmTZqYGiENhLR/kCbtr2MlrZXRoKF69eoyYcIEa7Hp0BwdHe167v5A+/6sXLnSfVGhH9etW1c++eSTHO/T5zrTdNOmTSW7aSrHa2f75NdffzV9ezTw0ZsGftr5WjtvuwdAup524CYhgEDwBf76SRb8vJADBBBwiMCuXbvk888/N52Ec2dJr2aKjY0VHdxPr56qXbu2uUR+2bJl8s4770h235ccb9F/+LNmzZIFCxaY2pevv/5arrvuOjl06FCO9awn2nnZvfOwtbww9wMHDpRt27bJ5MmTTY2L7tO6gkzzbidpjdPPP/8se/futbO69O3bV/RKNK1h0gBIO2JbTXW6AR1MUfOk5SMhgEDwBQiAgn8MyAECjhPQPixac6P9ZnIn7fNz4403mqvBtHkruwOwZHc4NldkZXcaFh1AUJP2sdE0duxYcwl9r169zHp6JZVent67d2/zeu4/2rdG+/LkFyDlXt/T83bt2pn86SXsWgulgVpiYqLp0+RpfU/L9LJ+DWiyO4F7ejnHsvr168tzzz1nBk1Un1q1apn+RTqIopW075F6aT5ICCAQfAFGgg7+MSAHCISswMGDB+Wnn34yl4BbfWKWL19uRovWGhANBqyUfQWXuQy8Ro0a1qJ876+55hrJvqrLXJqe70o2XtD+OXv27DEjOufX5OZtMzoitdbc5O4v5O09GrxpHybt7+OeHnjgAVMbpcElCQEEgi9AABT8Y0AOEAhZAb0CSq+e0poWHehQm84GDBhgAgCdy6uoSZuetKO0NhnlDiSKus1gvk9rs7S/lHYmr1atWjCzwr4RQOC/AjSBcSoggECRBbRz8+zZs02HY503Swf70+af7DFyirxNfaM19Ua41Ja89NJLojVABD9ndVrwZgR8KkANkE852RgCkSugY/7Y7WBsR0mbzLIHIDR9keys7+R1dHoP7Sel4x+REEDAGQIEQM44DuQCAQQQQAABBAIoQBNYALHZFQIIIIAAAgg4Q4AAyBnHgVwggAACCCCAQAAFCIACiM2uEEAAAQQQQMAZAgRAzjgO5AIBBBBAAAEEAihAABRAbHaFAAIIIIAAAs4Q+H8T3cS4IfLuggAAAABJRU5ErkJggg==" /><!-- --></p>
 </div>
 <div id="metadata" class="section level2">
 <h2>Metadata</h2>
 <div id="instruments" class="section level3">
 <h3>Instruments</h3>
 <p>The <code>get_instruments()</code> function gives information on all the CDI instruments in Wordbank.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_instruments</span>()</code></pre></div>
-<pre><code>## # A tibble: 50 x 6
-##    instrument_id              language  form age_min age_max has_grammar
-##            &lt;int&gt;                 &lt;chr&gt; &lt;chr&gt;   &lt;int&gt;   &lt;int&gt;       &lt;int&gt;
-##  1             1 British Sign Language    WG       8      36           0
-##  2             2             Cantonese    WS      16      30           0
-##  3             3              Croatian    WG       8      16           0
-##  4             4              Croatian    WS      16      30           0
-##  5             5                Danish    WS      16      36           1
-##  6             6    English (American)    WG       8      18           0
-##  7             7    English (American)    WS      16      30           1
-##  8             8                German    WS      18      30           0
-##  9             9                Hebrew    WG      11      25           0
-## 10            10                Hebrew    WS      18      24           0
-## # ... with 40 more rows</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">get_instruments</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 56 x 7
+##    instrument_id language     form  age_min age_max has_grammar unilemma_covera…
+##            &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;   &lt;int&gt;   &lt;int&gt;       &lt;int&gt;            &lt;dbl&gt;
+##  1             1 British Sig… WG          8      36           0            0.76 
+##  2             2 Cantonese    WS         16      30           0            0.95 
+##  3             3 Croatian     WG          8      16           0            1    
+##  4             4 Croatian     WS         16      30           0            0.52 
+##  5             5 Danish       WS         16      36           1            0.580
+##  6             6 English (Am… WG          8      18           0            1    
+##  7             7 English (Am… WS         16      30           1            1    
+##  8             8 German       WS         18      30           0            0.77 
+##  9             9 Hebrew       WG         11      25           0            1    
+## 10            10 Hebrew       WS         25      36           1            0.86 
+## # … with 46 more rows</code></pre>
 </div>
 <div id="sources" class="section level3">
 <h3>Sources</h3>
 <p>The <code>get_sources()</code> function gives information on all the data sources in Wordbank, either for a specific language and/or form or for all instruments. If the <code>admin_data</code> argument is set to <code>TRUE</code>, the results will also include the number of administrations in the database from that source and the minimum and maximum ages of those administrations.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_sources</span>(<span class="dt">form =</span> <span class="st">&quot;WG&quot;</span>)</code></pre></div>
-<pre><code>## # A tibble: 26 x 9
-##    source_id          name      dataset instrument_language
-##        &lt;int&gt;         &lt;chr&gt;        &lt;chr&gt;               &lt;chr&gt;
-##  1         9      Marchman      Norming  English (American)
-##  2        10         Byers               English (American)
-##  3        11          Thal           13  English (American)
-##  4        12          Thal           16  English (American)
-##  5        14      Marchman      Norming   Spanish (Mexican)
-##  6        18 Kristoffersen                        Norwegian
-##  7        19 Kristoffersen longitudinal           Norwegian
-##  8        20          CLEX                         Croatian
-##  9        24          CLEX                          Russian
-## 10        26          CLEX                          Swedish
-## # ... with 16 more rows, and 5 more variables: instrument_form &lt;fctr&gt;,
-## #   contributor &lt;chr&gt;, citation &lt;chr&gt;, longitudinal &lt;lgl&gt;, license &lt;fctr&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_sources</span>(<span class="dt">language =</span> <span class="st">&quot;Spanish (Mexican)&quot;</span>, <span class="dt">admin_data =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(source_id, name, dataset, instrument_form, n_admins, age_min, age_max)</code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">get_sources</span>(<span class="dt">form =</span> <span class="st">&quot;WG&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 29 x 9
+##    source_id name  dataset instrument_lang… instrument_form contributor citation
+##        &lt;int&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;            &lt;fct&gt;           &lt;chr&gt;       &lt;chr&gt;   
+##  1         9 Marc… &quot;Normi… English (Americ… Words &amp; Gestur… Larry Fens… &quot;Fenson…
+##  2        10 Byers &quot;&quot;      English (Americ… Words &amp; Gestur… Krista Bye… &quot;&quot;      
+##  3        11 Thal  &quot;13&quot;    English (Americ… Words &amp; Gestur… Donna Thal… &quot;Thal, …
+##  4        12 Thal  &quot;16&quot;    English (Americ… Words &amp; Gestur… Donna Thal… &quot;Thal, …
+##  5        14 Marc… &quot;Normi… Spanish (Mexica… Words &amp; Gestur… Donna Jack… &quot;Jackso…
+##  6        18 Kris… &quot;&quot;      Norwegian        Words &amp; Gestur… Hanne Simo… &quot;Simons…
+##  7        19 Kris… &quot;longi… Norwegian        Words &amp; Gestur… Hanne Simo… &quot;Simons…
+##  8        20 CLEX  &quot;&quot;      Croatian         Words &amp; Gestur… Melita Kov… &quot;Kovace…
+##  9        24 CLEX  &quot;&quot;      Russian          Words &amp; Gestur… Stella Cey… &quot;Е.А.Ве…
+## 10        26 CLEX  &quot;&quot;      Swedish          Words &amp; Gestur… Mårten Eri… &quot;Erikss…
+## # … with 19 more rows, and 2 more variables: longitudinal &lt;lgl&gt;, license &lt;fct&gt;</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">get_sources</span>(<span class="dt">language =</span> <span class="st">&quot;Spanish (Mexican)&quot;</span>, <span class="dt">admin_data =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="st">  </span><span class="kw">select</span>(source_id, name, dataset, instrument_form, n_admins, age_min, age_max)</span></code></pre></div>
 <pre><code>## # A tibble: 4 x 7
-##   source_id     name  dataset   instrument_form n_admins age_min age_max
-##       &lt;int&gt;    &lt;chr&gt;    &lt;chr&gt;            &lt;fctr&gt;    &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
-## 1        13 Marchman  Norming Words &amp; Sentences     1094      16      30
-## 2        14 Marchman  Norming  Words &amp; Gestures      778       8      19
-## 3        65  Fernald Outreach  Words &amp; Gestures       55      16      22
-## 4        66  Fernald Outreach Words &amp; Sentences       80      18      38</code></pre>
+##   source_id name     dataset  instrument_form   n_admins age_min age_max
+##       &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;fct&gt;                &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
+## 1        13 Marchman Norming  Words &amp; Sentences     1094      15      30
+## 2        14 Marchman Norming  Words &amp; Gestures       778       8      19
+## 3        65 Fernald  Outreach Words &amp; Gestures        55      16      22
+## 4        66 Fernald  Outreach Words &amp; Sentences       80      18      38</code></pre>
 </div>
 </div>
 <div id="advanced-functionality-age-of-acquisition" class="section level2">
 <h2>Advanced functionality: Age of acquisition</h2>
 <p>The <code>fit_aoa()</code> function computes estimates of items’ age of acquisition (AoA). It needs to be provided with a data frame returned by <code>get_instrument_data()</code> – one row per administration x item combination, and minimally the columns <code>age</code> and <code>num_item_id</code>. It returns a data frame with one row per item and an <code>aoa</code> column with the estimate, preserving and item-level columns in the input data. The AoA is estimated by computing the proportion of administrations for which the child understands/produces (<code>measure</code>) each word, smoothing the proportion using <code>method</code>, and taking the age at which the smoothed value is greater than <code>proportion</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eng_ws_data &lt;-<span class="st"> </span><span class="kw">get_instrument_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,
-                                   <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,
-                                   <span class="dt">items =</span> <span class="kw">c</span>(<span class="st">&quot;item_1&quot;</span>, <span class="st">&quot;item_42&quot;</span>),
-                                   <span class="dt">administrations =</span> <span class="ot">TRUE</span>,
-                                   <span class="dt">iteminfo =</span> <span class="ot">TRUE</span>)
-<span class="kw">fit_aoa</span>(eng_ws_data)</code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>eng_ws_data &lt;-<span class="st"> </span><span class="kw">get_instrument_data</span>(<span class="dt">language =</span> <span class="st">&quot;English (American)&quot;</span>,</span>
+<span id="cb20-2"><a href="#cb20-2"></a>                                   <span class="dt">form =</span> <span class="st">&quot;WS&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3"></a>                                   <span class="dt">items =</span> <span class="kw">c</span>(<span class="st">&quot;item_1&quot;</span>, <span class="st">&quot;item_42&quot;</span>),</span>
+<span id="cb20-4"><a href="#cb20-4"></a>                                   <span class="dt">administrations =</span> <span class="ot">TRUE</span>,</span>
+<span id="cb20-5"><a href="#cb20-5"></a>                                   <span class="dt">iteminfo =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb20-6"><a href="#cb20-6"></a><span class="kw">fit_aoa</span>(eng_ws_data)</span></code></pre></div>
 <pre><code>## # A tibble: 2 x 10
-##   num_item_id   aoa item_id definition  type category lexical_category
-##         &lt;dbl&gt; &lt;dbl&gt;   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;
-## 1           1    16  item_1    baa baa  word   sounds            other
-## 2          42    24 item_42        owl  word  animals            nouns
-## # ... with 3 more variables: lexical_class &lt;chr&gt;, uni_lemma &lt;chr&gt;,
+## # Groups:   num_item_id [2]
+##   num_item_id   aoa item_id definition type  category lexical_category
+##         &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;           
+## 1           1    NA item_1  baa baa    word  sounds   other           
+## 2          42    24 item_42 owl        word  animals  nouns           
+## # … with 3 more variables: lexical_class &lt;chr&gt;, uni_lemma &lt;chr&gt;,
 ## #   complexity_category &lt;chr&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fit_aoa</span>(eng_ws_data, <span class="dt">measure =</span> <span class="st">&quot;understands&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;glmrob&quot;</span>, <span class="dt">proportion =</span> <span class="fl">0.7</span>)</code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">fit_aoa</span>(eng_ws_data, <span class="dt">measure =</span> <span class="st">&quot;understands&quot;</span>, <span class="dt">method =</span> <span class="st">&quot;glmrob&quot;</span>, <span class="dt">proportion =</span> <span class="fl">0.7</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 2 x 10
-##   num_item_id   aoa item_id definition  type category lexical_category
-##         &lt;dbl&gt; &lt;dbl&gt;   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;
-## 1           1    21  item_1    baa baa  word   sounds            other
-## 2          42    27 item_42        owl  word  animals            nouns
-## # ... with 3 more variables: lexical_class &lt;chr&gt;, uni_lemma &lt;chr&gt;,
+## # Groups:   num_item_id [2]
+##   num_item_id   aoa item_id definition type  category lexical_category
+##         &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;           
+## 1           1    21 item_1  baa baa    word  sounds   other           
+## 2          42    27 item_42 owl        word  animals  nouns           
+## # … with 3 more variables: lexical_class &lt;chr&gt;, uni_lemma &lt;chr&gt;,
 ## #   complexity_category &lt;chr&gt;</code></pre>
 </div>
 <div id="advanced-functionality-cross-linguistic-data" class="section level2">
 <h2>Advanced functionality: Cross-linguistic data</h2>
 <p>One of the item-level fields is <code>uni_lemma</code> (“universal lemma”), which is intended to be an approximate semantic mapping between words across the languages in Wordbank. The function <code>get_crossling_items()</code> simply gives all the available <code>uni_lemma</code> values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_crossling_items</span>()</code></pre></div>
-<pre><code>## # A tibble: 1,379 x 1
-##          uni_lemma
-##              &lt;chr&gt;
-##  1               a
-##  2        a little
-##  3           a lot
-##  4            able
-##  5           about
-##  6           above
-##  7           after
-##  8       afternoon
-##  9           again
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">get_crossling_items</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 1,380 x 1
+##    uni_lemma      
+##    &lt;chr&gt;          
+##  1 a              
+##  2 a little       
+##  3 a lot          
+##  4 able           
+##  5 about          
+##  6 above          
+##  7 after          
+##  8 afternoon      
+##  9 again          
 ## 10 air conditioner
-## # ... with 1,369 more rows</code></pre>
+## # … with 1,370 more rows</code></pre>
 <p>The function <code>get_crossling_data()</code> takes a vector of <code>uni_lemmas</code> and returns a data frame of summary statistics for each item mapped to that uni_lemma in any language (on <code>WG</code> forms). Each row is combination of item and age, and the columns indicate the number of children (<code>n_children</code>), means (<code>comprehension</code>, <code>production</code>), standard deviations (<code>comprehension_sd</code>, <code>production_sd</code>), and item-level fields.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_crossling_data</span>(<span class="dt">uni_lemmas =</span> <span class="kw">c</span>(<span class="st">&quot;hat&quot;</span>, <span class="st">&quot;nose&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(language, uni_lemma, definition, age, n_children, comprehension,
-         production, comprehension_sd, production_sd) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">arrange</span>(uni_lemma)</code></pre></div>
-<pre><code>## # A tibble: 365 x 9
-##                 language uni_lemma definition   age n_children
-##                    &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt; &lt;int&gt;      &lt;int&gt;
-##  1 British Sign Language       hat        hat     8          4
-##  2 British Sign Language       hat        hat     9          4
-##  3 British Sign Language       hat        hat    10          4
-##  4 British Sign Language       hat        hat    11          6
-##  5 British Sign Language       hat        hat    12          6
-##  6 British Sign Language       hat        hat    13          6
-##  7 British Sign Language       hat        hat    14          7
-##  8 British Sign Language       hat        hat    15          6
-##  9 British Sign Language       hat        hat    16          7
-## 10 British Sign Language       hat        hat    17          7
-## # ... with 355 more rows, and 4 more variables: comprehension &lt;dbl&gt;,
-## #   production &lt;dbl&gt;, comprehension_sd &lt;dbl&gt;, production_sd &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">get_crossling_data</span>(<span class="dt">uni_lemmas =</span> <span class="kw">c</span>(<span class="st">&quot;hat&quot;</span>, <span class="st">&quot;nose&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="st">  </span><span class="kw">select</span>(language, uni_lemma, definition, age, n_children, comprehension,</span>
+<span id="cb26-4"><a href="#cb26-4"></a>         production, comprehension_sd, production_sd) <span class="op">%&gt;%</span></span>
+<span id="cb26-5"><a href="#cb26-5"></a><span class="st">  </span><span class="kw">arrange</span>(uni_lemma)</span></code></pre></div>
+<pre><code>## # A tibble: 381 x 9
+##    language uni_lemma definition   age n_children comprehension production
+##    &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;      &lt;int&gt;      &lt;int&gt;         &lt;dbl&gt;      &lt;dbl&gt;
+##  1 British… hat       hat            8          4         0          0    
+##  2 British… hat       hat            9          4         0          0    
+##  3 British… hat       hat           10          4         0          0    
+##  4 British… hat       hat           11          6         0.167      0    
+##  5 British… hat       hat           12          6         0          0    
+##  6 British… hat       hat           13          6         0          0    
+##  7 British… hat       hat           14          7         0.143      0    
+##  8 British… hat       hat           15          6         0          0    
+##  9 British… hat       hat           16          7         0.143      0.143
+## 10 British… hat       hat           17          7         0.286      0.143
+## # … with 371 more rows, and 2 more variables: comprehension_sd &lt;dbl&gt;,
+## #   production_sd &lt;dbl&gt;</code></pre>
+</div>
+<div id="advanced-functionality-vocabulary-quantiles" class="section level2">
+<h2>Advanced functionality: Vocabulary quantiles</h2>
+<p>The function <code>fit_vocab_quantiles()</code> uses quantile regression to fit a set of vocabulary size quantiles to a dataset. It takes a data frame return by <code>get_administration_data()</code>, and additional arguments specifying which measure column to fit on (<code>measure</code>: “production” or “comprehension”), an optional demographic column to group by (<code>group</code>), and which type of quantiles to fit (<code>quantiles</code>: “standard”, “deciles”, “quintiles”, “quartiles”, “median”, or a numeric vector of quantile values). Defaults to “standard”, which is 0.10, 0.25, 0.50, 0.75, 0.90.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>eng_ws &lt;-<span class="st"> </span><span class="kw">get_administration_data</span>(<span class="st">&quot;English (American)&quot;</span>, <span class="st">&quot;WS&quot;</span>)</span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="kw">fit_vocab_quantiles</span>(eng_ws, production)</span></code></pre></div>
+<pre><code>## # A tibble: 75 x 5
+## # Groups:   language, form [1]
+##    language           form    age quantile production
+##    &lt;chr&gt;              &lt;chr&gt; &lt;int&gt; &lt;fct&gt;         &lt;dbl&gt;
+##  1 English (American) WS       16 0.1            8.84
+##  2 English (American) WS       17 0.1           10.4 
+##  3 English (American) WS       18 0.1           14.0 
+##  4 English (American) WS       19 0.1           19.5 
+##  5 English (American) WS       20 0.1           27.0 
+##  6 English (American) WS       21 0.1           36.5 
+##  7 English (American) WS       22 0.1           49.9 
+##  8 English (American) WS       23 0.1           67.7 
+##  9 English (American) WS       24 0.1           90.0 
+## 10 English (American) WS       25 0.1          117.  
+## # … with 65 more rows</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">fit_vocab_quantiles</span>(eng_ws, production, sex)</span></code></pre></div>
+<pre><code>## # A tibble: 150 x 6
+## # Groups:   language, form, sex [2]
+##    language           form  sex      age quantile production
+##    &lt;chr&gt;              &lt;chr&gt; &lt;fct&gt;  &lt;int&gt; &lt;fct&gt;         &lt;dbl&gt;
+##  1 English (American) WS    Female    16 0.1            8.06
+##  2 English (American) WS    Female    17 0.1           10.6 
+##  3 English (American) WS    Female    18 0.1           16.2 
+##  4 English (American) WS    Female    19 0.1           25.  
+##  5 English (American) WS    Female    20 0.1           36.9 
+##  6 English (American) WS    Female    21 0.1           51.9 
+##  7 English (American) WS    Female    22 0.1           70.8 
+##  8 English (American) WS    Female    23 0.1           93.8 
+##  9 English (American) WS    Female    24 0.1          121.  
+## 10 English (American) WS    Female    25 0.1          152.  
+## # … with 140 more rows</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">fit_vocab_quantiles</span>(eng_ws, production, <span class="dt">quantiles =</span> <span class="st">&quot;quartiles&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 45 x 5
+## # Groups:   language, form [1]
+##    language           form    age quantile production
+##    &lt;chr&gt;              &lt;chr&gt; &lt;int&gt; &lt;fct&gt;         &lt;dbl&gt;
+##  1 English (American) WS       16 0.25           18.0
+##  2 English (American) WS       17 0.25           21.8
+##  3 English (American) WS       18 0.25           30.1
+##  4 English (American) WS       19 0.25           43.0
+##  5 English (American) WS       20 0.25           60.6
+##  6 English (American) WS       21 0.25           82.7
+##  7 English (American) WS       22 0.25          109. 
+##  8 English (American) WS       23 0.25          141. 
+##  9 English (American) WS       24 0.25          177. 
+## 10 English (American) WS       25 0.25          217. 
+## # … with 35 more rows</code></pre>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

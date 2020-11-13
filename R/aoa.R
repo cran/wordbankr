@@ -14,6 +14,10 @@
 #'   (defaults to \code{glm}).
 #' @param proportion A number between 0 and 1 indicating threshold proportion of
 #'   children.
+#' @param age_min The minimum age to allow for an age of acquisition. Defaults
+#'  to the minimum age in \code{instrument_data}
+#' @param age_max The maximum age to allow for an age of acquisition. Defaults
+#'  to the maximum age in \code{instrument_data}
 #'
 #' @return A data frame where every row is an item, the item-level columns from
 #'   the input data are preserved, and the \code{aoa} column contains the age of
@@ -29,10 +33,13 @@
 #' }
 #' @export
 fit_aoa <- function(instrument_data, measure = "produces", method = "glm",
-                    proportion = 0.5) {
+                    proportion = 0.5,
+                    age_min = min(instrument_data$age, na.rm = TRUE),
+                    age_max = max(instrument_data$age, na.rm = TRUE)) {
 
   assertthat::assert_that(is.element("age", colnames(instrument_data)))
   assertthat::assert_that(is.element("num_item_id", colnames(instrument_data)))
+  assertthat::assert_that(age_min <= age_max)
 
   instrument_summary <- instrument_data %>%
     dplyr::filter(!is.na(.data$age)) %>%
@@ -47,12 +54,10 @@ fit_aoa <- function(instrument_data, measure = "produces", method = "glm",
     dplyr::filter(.data$measure_name == measure) %>%
     dplyr::group_by(.data$age, .data$num_item_id) %>%
     dplyr::summarise(num_true = sum(.data$value),
-                     num_false = n() - .data$num_true)
+                     num_false = dplyr::n() - .data$num_true)
 
   inv_logit <- function(x) 1 / (exp(-x) + 1)
-  ages <- dplyr::data_frame(
-    age = min(instrument_summary$age):max(instrument_summary$age)
-  )
+  ages <- dplyr::tibble(age = age_min:age_max)
 
   fit_methods <- list(
     "empirical" = function(item_data) {
@@ -69,25 +74,23 @@ fit_aoa <- function(instrument_data, measure = "produces", method = "glm",
       model <- robustbase::glmrob(cbind(num_true, num_false) ~ age, item_data,
                                   family = "binomial")
       ages %>% dplyr::mutate(prop = inv_logit(stats::predict(model, ages)))
-    },
-    "bayes" = function(item_data) {
-      # TODO
     }
   )
 
   compute_aoa <- function(fit_data) {
-    acq <- fit_data %>% dplyr::filter(.data$prop > proportion)
-    if (nrow(acq)) min(acq$age) else NA
+    acq <- fit_data %>% dplyr::filter(.data$prop >= proportion)
+    if (nrow(acq) & any(fit_data$prop < proportion)) min(acq$age) else NA
   }
 
-  instrument_aoa <- instrument_summary %>%
+  instrument_fits <- instrument_summary %>%
     dplyr::group_by(.data$num_item_id) %>%
     tidyr::nest() %>%
     dplyr::mutate(fit_data = .data$data %>%
-                    purrr::map(fit_methods[[method]])) %>%
+                    purrr::map(fit_methods[[method]]))
+
+  instrument_aoa <- instrument_fits %>%
     dplyr::mutate(aoa = .data$fit_data %>% purrr::map_dbl(compute_aoa)) %>%
     dplyr::select(-.data$data, -.data$fit_data)
-
 
   item_cols <- c("num_item_id", "item_id", "definition", "type", "category",
                  "lexical_category", "lexical_class", "uni_lemma",
