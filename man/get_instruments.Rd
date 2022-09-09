@@ -4,11 +4,11 @@
 \alias{get_instruments}
 \title{Get the Wordbank instruments}
 \usage{
-get_instruments(mode = "remote")
+get_instruments(db_args = NULL)
 }
 \arguments{
-\item{mode}{A string indicating connection mode: one of \code{"local"}, or
-\code{"remote"} (defaults to \code{"remote"}).}
+\item{db_args}{List with arguments to connect to wordbank mysql database
+(host, dbname, user, and password).}
 }
 \value{
 A data frame where each row is a CDI instrument and each column is a
@@ -19,7 +19,7 @@ A data frame where each row is a CDI instrument and each column is a
 Get the Wordbank instruments
 }
 \examples{
-\dontrun{
+\donttest{
 instruments <- get_instruments()
 }
 }

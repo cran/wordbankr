@@ -3,7 +3,11 @@ library(wordbankr)
 library(dplyr)
 library(ggplot2)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = FALSE)
-theme_set(theme_bw())
+theme_set(theme_minimal())
+
+con <- connect_to_wordbank()
+can_connect <- !is.null(con)
+knitr::opts_chunk$set(eval = can_connect)
 
 ## -----------------------------------------------------------------------------
 get_administration_data(language = "English (American)", form = "WS")
@@ -28,11 +32,11 @@ animals <- get_item_data(language = "English (American)", form = "WS") %>%
 animal_data <- get_instrument_data(language = "English (American)",
                                    form = "WS",
                                    items = animals$item_id,
-                                   administrations = TRUE)
+                                   administration_info = TRUE,
+                                   item_info = TRUE)
 
 ## ---- fig.width=6, fig.height=4-----------------------------------------------
 animal_summary <- animal_data %>%
-  mutate(produces = value == "produces") %>%
   group_by(age, data_id) %>%
   summarise(num_animals = sum(produces, na.rm = TRUE)) %>%
   group_by(age) %>%
@@ -46,32 +50,19 @@ ggplot(animal_summary, aes(x = age, y = median_num_animals)) +
 get_instruments()
 
 ## -----------------------------------------------------------------------------
-get_sources(form = "WG")
-get_sources(language = "Spanish (Mexican)", admin_data = TRUE) %>%
-  select(source_id, name, dataset, instrument_form, n_admins, age_min, age_max)
+get_datasets(form = "WG")
+get_datasets(language = "Spanish (Mexican)", admin_data = TRUE)
 
 ## -----------------------------------------------------------------------------
-eng_ws_data <- get_instrument_data(language = "English (American)",
-                                   form = "WS",
-                                   items = c("item_1", "item_42"),
-                                   administrations = TRUE,
-                                   iteminfo = TRUE)
-fit_aoa(eng_ws_data)
-fit_aoa(eng_ws_data, measure = "understands", method = "glmrob", proportion = 0.7)
+fit_aoa(animal_data)
+fit_aoa(animal_data, method = "glmrob", proportion = 1/3)
 
 ## -----------------------------------------------------------------------------
 get_crossling_items()
 
-## -----------------------------------------------------------------------------
-get_crossling_data(uni_lemmas = c("hat", "nose")) %>%
-  ungroup() %>%
-  select(language, uni_lemma, definition, age, n_children, comprehension,
-         production, comprehension_sd, production_sd) %>%
-  arrange(uni_lemma)
-
-## -----------------------------------------------------------------------------
-eng_ws <- get_administration_data("English (American)", "WS")
-fit_vocab_quantiles(eng_ws, production)
-fit_vocab_quantiles(eng_ws, production, sex)
-fit_vocab_quantiles(eng_ws, production, quantiles = "quartiles")
+## ---- eval=FALSE--------------------------------------------------------------
+#  get_crossling_data(uni_lemmas = c("hat", "nose")) %>%
+#    select(language, uni_lemma, item_definition, age, n_children, comprehension,
+#           production, comprehension_sd, production_sd) %>%
+#    arrange(uni_lemma)
 

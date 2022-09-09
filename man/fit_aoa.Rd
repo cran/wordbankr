@@ -45,11 +45,11 @@ understand/produce the item is greater than some threshold. The proportions
 used can be empirical or first smoothed by a model.
 }
 \examples{
-\dontrun{
+\donttest{
 eng_ws_data <- get_instrument_data(language = "English (American)",
                                    form = "WS",
                                    items = c("item_1", "item_42"),
-                                   administrations = TRUE)
-eng_ws_aoa <- fit_aoa(eng_ws_data)
+                                   administration_info = TRUE)
+if (!is.null(eng_ws_data)) eng_ws_aoa <- fit_aoa(eng_ws_data)
 }
 }

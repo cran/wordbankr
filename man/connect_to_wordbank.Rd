@@ -4,11 +4,11 @@
 \alias{connect_to_wordbank}
 \title{Connect to the Wordbank database}
 \usage{
-connect_to_wordbank(mode = "remote")
+connect_to_wordbank(db_args = NULL)
 }
 \arguments{
-\item{mode}{A string indicating connection mode: one of \code{"local"}, or
-\code{"remote"} (defaults to \code{"remote"}).}
+\item{db_args}{List with arguments to connect to wordbank mysql database
+(host, dbname, user, and password).}
 }
 \value{
 A \code{src} object which is connection to the Wordbank database.
@@ -17,9 +17,7 @@ A \code{src} object which is connection to the Wordbank database.
 Connect to the Wordbank database
 }
 \examples{
-\dontrun{
+\donttest{
 src <- connect_to_wordbank()
-DBI::dbDisconnect(src)
 }
 }
-\keyword{internal}

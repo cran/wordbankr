@@ -8,7 +8,6 @@
 #'   "quartiles", "median", or a numeric vector of quantile values.
 #'
 #' @importFrom quantregGrowth ps
-#' @importFrom rlang ":="
 #'
 #' @return A data frame with the columns "language", "form", "age", \code{group}
 #'   (if specified), "quantile", and \code{measure}, where \code{measure} is the
@@ -16,17 +15,22 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' eng_ws <- get_administration_data("English (American)", "WS")
-#' fit_vocab_quantiles(eng_ws, production)
-#' fit_vocab_quantiles(eng_ws, production, sex)
-#' fit_vocab_quantiles(eng_ws, production, quantiles = "quartiles")
+#' \donttest{
+#' eng_wg <- get_administration_data(language = "English (American)",
+#'                                   form = "WG",
+#'                                   include_demographic_info = TRUE)
+#' if (!is.null(eng_wg)) {
+#'   vocab_quantiles <- fit_vocab_quantiles(eng_wg, production)
+#'   vocab_quantiles_sex <- fit_vocab_quantiles(eng_wg, production, sex)
+#'   vocab_quartiles <- fit_vocab_quantiles(eng_wg, production, quantiles = "quartiles")
 #' }
-fit_vocab_quantiles <- function(vocab_data, measure, group = NULL,
+#' }
+fit_vocab_quantiles <- function(vocab_data, measure, group,
                                 quantiles = "standard") {
 
-  quo_measure <- rlang::enquo(measure)
-  quo_group <- rlang::enquo(group)
+  lifecycle::deprecate_warn(
+    when = "1.0.0", what = "fit_vocab_quantiles()",
+    details = "Please use the vocabulary norms shiny app at http://wordbank.stanford.edu/analyses?name=vocab_norms")
 
   quantile_opts <- list(
     standard = c(0.10, 0.25, 0.50, 0.75, 0.90),
@@ -45,34 +49,38 @@ fit_vocab_quantiles <- function(vocab_data, measure, group = NULL,
            paste(names(quantile_opts), collapse = ", "))
     num_quantiles <- quantile_opts[[quantiles]]
   } else {
-    stop("Quantiles must be numberic vector or character vector of length 1")
+    stop("Quantiles must be a numeric vector or a character vector of length 1")
   }
 
   vocab_data <- vocab_data %>% dplyr::group_by(.data$language, .data$form)
 
-  if (!rlang::quo_is_null(quo_group)) {
+  if (!missing(group)) {
     vocab_data <- vocab_data %>%
-      dplyr::filter(!is.na(!!quo_group)) %>%
-      dplyr::group_by(!!quo_group, add = TRUE)
+      dplyr::filter((dplyr::if_any({{ group }}, ~!is.na(.x)))) %>%
+      dplyr::group_by({{ group }}, .add = TRUE)
   }
 
   vocab_models <- vocab_data %>%
-    dplyr::rename(vocab = !!quo_measure) %>%
+    dplyr::rename(vocab = {{ measure }}) %>%
     tidyr::nest() %>%
-    dplyr::mutate(model = purrr::pmap(
-      list(.data$language, .data$form, .data$data),
-      function(lang, frm, df) {
+    dplyr::mutate(group_label = paste(.data$language, .data$form, {{ group }})) %>%
+    dplyr::mutate(model = purrr::map2(
+      .data$group_label, .data$data,
+      function(gl, df) {
         tryCatch(
           suppressWarnings(
             quantregGrowth::gcrq(vocab ~ ps(age, monotone = 1, lambda = 1000),
                                  tau = num_quantiles, data = df)
           ),
           error = function(e) {
-            message(sprintf("Unable to fit model for %s %s", lang, frm))
+            message(glue("Unable to fit model for {gl}"))
             return(NULL)
           })
       })) %>%
-    dplyr::filter(purrr::map_lgl(.data$model, ~!is.null(.)))
+    dplyr::select(-.data$group_label) %>%
+    dplyr::filter(purrr::map_lgl(.data$model, ~!is.null(.))) %>%
+    dplyr::ungroup()
+  if (nrow(vocab_models) == 0) return(NULL)
 
   ages <- data.frame(age = min(vocab_data$age):max(vocab_data$age))
   get_predicted <- function(vocab_model) {
@@ -89,7 +97,7 @@ fit_vocab_quantiles <- function(vocab_data, measure, group = NULL,
     dplyr::mutate(predicted = purrr::map(.data$model, get_predicted)) %>%
     dplyr::select(-.data$data, -.data$model) %>%
     tidyr::unnest(cols = .data$predicted) %>%
-    dplyr::rename(!!quo_measure := .data$predicted) %>%
+    dplyr::rename("{{measure}}" := .data$predicted) %>%
     dplyr::mutate(quantile = factor(.data$quantile))
 
   return(vocab_fits)

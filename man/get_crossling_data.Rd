@@ -4,13 +4,13 @@
 \alias{get_crossling_data}
 \title{Get item-by-age summary statistics for items across languages}
 \usage{
-get_crossling_data(uni_lemmas, mode = "remote")
+get_crossling_data(uni_lemmas, db_args = NULL)
 }
 \arguments{
 \item{uni_lemmas}{A character vector of uni_lemmas.}
 
-\item{mode}{A string indicating connection mode: one of \code{"local"}, or
-\code{"remote"} (defaults to \code{"remote"}).}
+\item{db_args}{List with arguments to connect to wordbank mysql database
+(host, dbname, user, and password).}
 }
 \value{
 A dataframe with a row for each combination of language, item, and
@@ -24,7 +24,7 @@ A dataframe with a row for each combination of language, item, and
 Get item-by-age summary statistics for items across languages
 }
 \examples{
-\dontrun{
-crossling_data <- get_crossling_data(uni_lemmas = c("hat", "nose"))
+\donttest{
+crossling_data <- get_crossling_data(uni_lemmas = "dog")
 }
 }
