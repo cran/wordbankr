@@ -1,3 +1,6 @@
+# wordbankr 1.0.1
+- graceful failure for connection issues
+
 # wordbankr 1.0.0
 - updates for new structure of the Wordbank database, including functionality for data on children's language exposures and health conditions
 - renaming of fields and arguments for consistency and clarity

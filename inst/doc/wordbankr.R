@@ -1,4 +1,4 @@
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 library(wordbankr)
 library(dplyr)
 library(ggplot2)
@@ -24,7 +24,7 @@ get_instrument_data(
   items = c("item_26", "item_46")
 )
 
-## ---- fig.width=6, fig.height=4-----------------------------------------------
+## ----fig.width=6, fig.height=4------------------------------------------------
 animals <- get_item_data(language = "English (American)", form = "WS") %>%
   filter(category == "animals")
 
@@ -35,7 +35,7 @@ animal_data <- get_instrument_data(language = "English (American)",
                                    administration_info = TRUE,
                                    item_info = TRUE)
 
-## ---- fig.width=6, fig.height=4-----------------------------------------------
+## ----fig.width=6, fig.height=4------------------------------------------------
 animal_summary <- animal_data %>%
   group_by(age, data_id) %>%
   summarise(num_animals = sum(produces, na.rm = TRUE)) %>%
@@ -60,7 +60,7 @@ fit_aoa(animal_data, method = "glmrob", proportion = 1/3)
 ## -----------------------------------------------------------------------------
 get_crossling_items()
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  get_crossling_data(uni_lemmas = c("hat", "nose")) %>%
 #    select(language, uni_lemma, item_definition, age, n_children, comprehension,
 #           production, comprehension_sd, production_sd) %>%
