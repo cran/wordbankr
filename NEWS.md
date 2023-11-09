@@ -1,3 +1,6 @@
+# wordbankr 1.0.2
+- more graceful failure for connection issues
+
 # wordbankr 1.0.1
 - graceful failure for connection issues
 
