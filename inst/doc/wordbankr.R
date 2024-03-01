@@ -25,26 +25,32 @@ get_instrument_data(
 )
 
 ## ----fig.width=6, fig.height=4------------------------------------------------
-animals <- get_item_data(language = "English (American)", form = "WS") %>%
-  filter(category == "animals")
+items <- get_item_data(language = "English (American)", form = "WS")
+if (!is.null(items)) {
+  animals <- items %>% filter(category == "animals")
+}
 
 ## -----------------------------------------------------------------------------
-animal_data <- get_instrument_data(language = "English (American)",
-                                   form = "WS",
-                                   items = animals$item_id,
-                                   administration_info = TRUE,
-                                   item_info = TRUE)
+if (!is.null(animals)) {
+  animal_data <- get_instrument_data(language = "English (American)",
+                                     form = "WS",
+                                     items = animals$item_id,
+                                     administration_info = TRUE,
+                                     item_info = TRUE)
+}
 
 ## ----fig.width=6, fig.height=4------------------------------------------------
-animal_summary <- animal_data %>%
-  group_by(age, data_id) %>%
-  summarise(num_animals = sum(produces, na.rm = TRUE)) %>%
-  group_by(age) %>%
-  summarise(median_num_animals = median(num_animals, na.rm = TRUE))
+if (!is.null(animal_data)) {
+  animal_summary <- animal_data %>%
+    group_by(age, data_id) %>%
+    summarise(num_animals = sum(produces, na.rm = TRUE)) %>%
+    group_by(age) %>%
+    summarise(median_num_animals = median(num_animals, na.rm = TRUE))
   
-ggplot(animal_summary, aes(x = age, y = median_num_animals)) +
-  geom_point() +
-  labs(x = "Age (months)", y = "Median animal words producing")
+  ggplot(animal_summary, aes(x = age, y = median_num_animals)) +
+    geom_point() +
+    labs(x = "Age (months)", y = "Median animal words producing")
+}
 
 ## -----------------------------------------------------------------------------
 get_instruments()
